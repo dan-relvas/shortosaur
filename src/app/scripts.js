@@ -12,7 +12,7 @@ const copyLink = document.getElementById("copy-link");
 const go = document.getElementById("url-go");
 
 const validUrlRegex =
-  /^(https?:\/\/)?([a-zA-Z0-9\-\.]+)(:[0-9]{1,5})?(\/[^\s]*)?$/;
+  /^(https?:\/\/)?([a-zA-Z0-9\-.]+)(:[0-9]{1,5})?(\/[^\s]*)?$/;
 
 const doShortening = async (url) => {
   const resp = await fetch("/shorten", {
@@ -125,7 +125,7 @@ const copyToClipboard = () => {
       error.innerHTML = "";
 
       resultColorBlock.style.borderColor = stringToHexColor(
-        response.body.redirect
+        response.body.redirect,
       );
       copyLink.value = response.body.redirect;
       resultShortlink.innerHTML = link(response.body.redirect);
