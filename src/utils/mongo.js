@@ -1,17 +1,26 @@
 const { MongoClient } = require("mongodb");
+const { log, error } = require("./helpers");
 
 /**
  * Creates a new mongodb client using our env vars.
  */
-const createMongoClient = async () => {
-  // Init client.
-  const client = new MongoClient(process.env.MONGO_URI);
+const useMongoClient = async (req, res, next) => {
+  try {
+    // Init client.
+    const client = new MongoClient(process.env.MONGO_URI);
 
-  // Do connection.
-  await client.connect();
+    // Do connection.
+    await client.connect();
 
-  // Return default DB (found in uri).
-  return client.db();
+    // Return default DB (found in uri).
+    req.db = client.db();
+    log("[mongodb] db connected");
+  } catch (e) {
+    error("[mongodb] failed to connect");
+    error(e);
+  }
+
+  next();
 };
 
-module.exports = { createMongoClient };
+module.exports = { useMongoClient };

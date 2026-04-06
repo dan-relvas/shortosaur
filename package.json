@@ -4,7 +4,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon node src/app.js"
+    "dev": "nodemon node src/app.js",
+    "lint": "npx eslint"
   },
   "dependencies": {
     "body-parser": "^2.2.2",
@@ -12,5 +13,10 @@
     "express": "^4.22.1",
     "mongodb": "^6.21.0",
     "nodemon": "^3.1.11"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.2.0",
+    "globals": "^17.4.0"
   }
 }

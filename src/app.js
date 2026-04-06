@@ -4,35 +4,32 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 
-const { createMongoClient } = require("./utils/mongo");
+const { useMongoClient } = require("./utils/mongo");
 const { log, error } = require("./utils/helpers");
 const { generateUrlHash } = require("./utils/hash");
+
+const linkttl = Number(process?.env?.LINK_TTL ?? 60 * 60);
+const validUrlRegex =
+  /^(https?:\/\/)?([a-zA-Z0-9\-.]+)(:[0-9]{1,5})?(\/[^\s]*)?$/;
 
 const app = express();
 const port = process.env.APP_PORT;
 const appOrigin = process.env.APP_ORIGIN || "http://localhost:3000";
 
-const linkttl = Number(process?.env?.LINK_TTL ?? 60 * 60);
-
 app.use(bodyParser.json());
-
 app.use((req, res, next) => {
   log(`[request] ${req.originalUrl}`);
   next();
 });
-
 app.use("/", express.static(path.join(__dirname, "app")));
 app.use("/assets", express.static(path.join(__dirname, "assets")));
-
-const validUrlRegex =
-  /^(https?:\/\/)?([a-zA-Z0-9\-\.]+)(:[0-9]{1,5})?(\/[^\s]*)?$/;
+app.use(useMongoClient);
 
 app.get("/health", async (req, res) => {
   // Check DB
   let dbHealth = false;
   try {
-    const db = await createMongoClient();
-    const stats = await db.stats();
+    const stats = await req.db.stats();
     if (stats?.ok === 1) dbHealth = true;
   } catch (e) {
     error("db check failed: ", e);
@@ -43,8 +40,7 @@ app.get("/health", async (req, res) => {
 
 app.post("/shorten", async (req, res) => {
   log("[/shorten] request: ", { body: req.body });
-  const db = await createMongoClient();
-  const linkCollection = db.collection("links");
+  const linkCollection = req.db.collection("links");
 
   if (!req.body.url || !req.body.url?.match(validUrlRegex)?.length) {
     error("[/shorten] invalid url");
@@ -81,6 +77,7 @@ app.post("/shorten", async (req, res) => {
 
     log("[/shorten] creating link: ", { link });
     await linkCollection.insertOne(link).catch((e) => {
+      error(e);
       return res.status(500).send({
         message: "Error creating link.",
       });
@@ -99,8 +96,7 @@ app.get("/:code([a-zA-Z0-9]{6})", async (req, res) => {
   const code = req.params.code;
   log("[/:code] requested link: ", { code });
 
-  const db = await createMongoClient();
-  const linkCollection = db.collection("links");
+  const linkCollection = req.db.collection("links");
   const data = await linkCollection.findOne({ code });
   log("[/:code] link lookup: ", { data });
 
@@ -116,7 +112,7 @@ app.get("/:code([a-zA-Z0-9]{6})", async (req, res) => {
   const hits = data?.hits || [];
   await linkCollection.updateOne(
     { _id: data._id },
-    { $set: { hits: [...hits, hit] } }
+    { $set: { hits: [...hits, hit] } },
   );
 
   log("[/:code] sending redirect to endpoint");
