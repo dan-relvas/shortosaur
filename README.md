@@ -27,7 +27,7 @@ Down to the tech! It is comprised of;
 
 Something simple like this will do;
 
-```
+```js
 use shortosaur;
 
 db.createUser({ user: "shortosaur", pwd: passwordPrompt(), roles: ["readWrite"] });
