@@ -17,27 +17,53 @@ Down to the tech! It is comprised of;
 
 ## Quick Start
 
-### Local Dev or a server
+### MongoDB
 
-1. Clone the repo.
-
-2. Do an `npm i`.
-
-3. Setup your MongoDB instance and user.
+Shortosaur needs a mongodb instance with a user and database setup.
 
 Something simple like this will do;
 
 ```js
+// Use database.
 use shortosaur;
 
+// Create shortosaur user.
 db.createUser({ user: "shortosaur", pwd: passwordPrompt(), roles: ["readWrite"] });
 ```
 
-4. `cp .env.example .env` and fill this in, you can ignore or delete the docker config.
+### Docker
 
-5. Run `npm run dev` for a nodemon process to do local dev or setup a process watcher for `npm run start` on a server
+Build this repo using `docker build -t shortosaur .`
 
-### For Docker
+or
+
+Pull from Docker Hub `docker pull danrelvas/shortosaur:latest`.
+
+Then run the image like so;
+
+```sh
+docker run --name shortosaur \
+  -p 3000:3000 \
+  -e APP_ORIGIN='http://<hostname>:3000' \
+  -e MONGO_URI='mongodb://<user>:<password>@<hostname>:27017/shortosaur?directConnection=true' \
+  -d shortosaur;
+```
+
+`APP_ORIGIN` will inform which hostname the app is running on, you can leave this a localhost and reverse proxy it or directly bind to 80 for example. Ensure you update `-p 80:3000` too if you do.
+
+`MONGO_URI` informs shortosaur where to find the mongodb instance it should use and should be a standard MongoDB URI.
+
+### Local Dev or a server
+
+1. Do an `npm i`.
+
+2. `cp .env.example .env` and fill this in, you can ignore or delete the docker config.
+
+3. Run `npm run dev` for a nodemon process to do local dev or setup a process watcher for `npm run start` on a server
+
+### Docker Compose
+
+Where you might want to run the entire stack locally in docker, I have a docker compose yml with the MongoDB image included;
 
 1. Clone the repo.
 
