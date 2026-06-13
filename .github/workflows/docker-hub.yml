@@ -8,6 +8,9 @@ on:
 jobs:
   push:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      deployment: true
     steps:
       -
         name: Login to Docker Hub
