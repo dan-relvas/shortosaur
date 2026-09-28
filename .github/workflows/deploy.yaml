@@ -23,4 +23,4 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: bash -i -c 'cd /var/www/labs/shortosaur && git pull && npm i && pm2 restart shortosaur'
+        script: bash -i -c 'cd /var/www/labs/shortosaur && git checkout . && git pull && npm i && pm2 restart shortosaur'
