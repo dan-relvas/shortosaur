@@ -101,8 +101,16 @@ app.post("/shorten", async (req, res) => {
   }
 });
 
-app.get("/:code([a-zA-Z0-9]{6})", async (req, res) => {
+app.get("/:code", async (req, res) => {
+
   const code = req.params.code;
+  if (!/^[a-zA-Z0-9]{6}$/.test(code)) {
+    error("[/:code] code format incorrect");
+    return res.status(500).send({
+      message: "Code format incorrect.",
+    });
+  }
+
   log("[/:code] requested link: ", { code });
 
   const linkCollection = db.collection("links");
